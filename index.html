@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page</title>
+    <link href="https://cdn.tailwindcss.com"></link>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; }
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.5rem; font-weight: 600; text-align: center; margin-bottom: 20px; }
+        label { font-weight: 500; display: block; margin-bottom: 5px; }
+        textarea, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; }
+        button { width: 100%; padding: 10px; background-color: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+        button:hover { background-color: #0b5ed7; }
+        #response { margin-top: 20px; padding: 15px; background-color: #e9ecef; border: 1px solid #dee2e6; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
+        #spinner { display: none; margin: 20px auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Custom API Test Client</h1>
+        
+        <div>
+            <label for="docUrl">Document URL:</label>
+            <input type="text" id="docUrl" value="https://hackrx.blob.core.windows.net/assets/policy.pdf?sv=2023-01-03&st=2025-07-04T09%3A11%3A24Z&se=2027-07-05T09%3A11%3A00Z&sr=b&sp=r&sig=N4a9OU0w0QXO6AOIBiu4bpl7AXvEZogeT%2FjUHNO7HzQ%3D">
+        </div>
+
+        <div>
+            <label for="questions">Questions (one per line):</label>
+            <textarea id="questions" rows="5">What is the grace period for premium payment under the National Parivar Mediclaim Plus Policy?
+What is the waiting period for pre-existing diseases (PED) to be covered?
+Does this policy cover maternity expenses, and what are the conditions?</textarea>
+        </div>
+
+        <button onclick="sendRequest()">Send Request</button>
+
+        <div id="spinner"></div>
+        <pre id="response"></pre>
+    </div>
+
+    <script>
+        async function sendRequest() {
+            const docUrl = document.getElementById('docUrl').value;
+            const questionsText = document.getElementById('questions').value;
+            const questionsArray = questionsText.split('\n').filter(q => q.trim() !== '');
+
+            const responseEl = document.getElementById('response');
+            const spinnerEl = document.getElementById('spinner');
+
+            // Show spinner and clear previous response
+            spinnerEl.style.display = 'block';
+            responseEl.textContent = '';
+
+            const requestBody = {
+                documents: docUrl,
+                questions: questionsArray
+            };
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+                // The token is correctly included here
+                'Authorization': 'Bearer cbf0f88234e208bafab14c4957a237e141e20fba6319e51479652857b5c1718a'
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/hackrx/run', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    responseEl.style.color = 'red';
+                                      // ...existing code...
+                    responseEl.textContent = `Error ${response.status}: ${JSON.stringify(data, null, 2)}`;
+                    // ...existing code...
+                } else {
+                    responseEl.style.color = 'black';
+                    responseEl.textContent = JSON.stringify(data, null, 2);
+                }
+
+            } catch (error) {
+                responseEl.style.color = 'red';
+                             // ...existing code...
+                responseEl.textContent = `An error occurred: ${error}`;
+                // ...existing code...
+            } finally {
+                // Hide spinner
+                spinnerEl.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

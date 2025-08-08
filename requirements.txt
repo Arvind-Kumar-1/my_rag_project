@@ -1,0 +1,11 @@
+# requirements.txt
+fastapi
+uvicorn
+ollama
+sentence-transformers
+faiss-cpu
+PyMuPDF
+requests
+numpy
+pydantic
+pydantic-settings
